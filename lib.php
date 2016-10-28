@@ -363,3 +363,33 @@ function hvp_update_grades($hvp=null, $userid=0, $nullifnone=true) {
         hvp_grade_item_update($hvp);
     }
 }
+
+function hvp_get_types() {
+    $types = [];
+    $core = \mod_hvp\framework::instance();
+    //var_dump($core);
+    $libs = $core->getLibrariesInstalled();
+    //var_dump($libs);
+    foreach($libs as $lib=>$patch) {
+        $libinfo = $core->libraryFromString($lib);
+        $library = $core->loadLibrary($libinfo['machineName'], $libinfo['majorVersion'], $libinfo['minorVersion']);
+        //var_dump($library);
+        if ($library['runnable']) {
+            //var_dump($library);
+            $type = new \stdClass();
+            $libid = $core->getLibraryId($library);
+            var_dump(base64_encode($libid));
+            //$type->title= $library['title'];
+            $type->type = strtr("{$libid}","0123456789",'abcdefghij') ;
+            
+            $type->typestr = $library['title'];
+            $type->modclass = 'fake';
+            $type->help = $library['title'];
+            $types[] = $type;
+        }
+    }
+    
+    
+    return $types;
+    
+}

@@ -124,9 +124,23 @@ class mod_hvp_mod_form extends moodleform_mod {
         if ($content === null && $DB->get_field_sql("SELECT id FROM {hvp_libraries} WHERE runnable = 1", null, IGNORE_MULTIPLE) === false) {
           $defaultvalues['h5paction'] = 'upload';
         }
-
-        // Set editor defaults
-        $defaultvalues['h5plibrary'] = ($content === null ? 0 : H5PCore::libraryToString($content['library']));
+        
+        $type = optional_param('type', false, PARAM_RAW);
+        if (is_null($content) & $type !== false) {
+            //$type = base64_decode($type);
+            $type = strtr("{$type}",'abcdefghij', "0123456789");
+            $libinfo = $DB->get_record("hvp_libraries", array('id' => $type));
+            $core = \mod_hvp\framework::instance();
+            $library = $core->loadLibrary(
+                    $libinfo->machine_name, 
+                    $libinfo->major_version, 
+                    $libinfo->minor_version);
+            $defaultvalues['h5plibrary'] = H5PCore::libraryToString($library);
+        } else {
+            // Set editor defaults
+            $defaultvalues['h5plibrary'] = ($content === null ? 0 : H5PCore::libraryToString($content['library']));
+        }
+        //$defaultvalues['h5plibrary'] = ($content === null ? 0 : H5PCore::libraryToString($content['library']));
         $defaultvalues['h5pparams'] = ($content === null ? '{}' : $core->filterParameters($content));
 
         // Add required editor assets.
